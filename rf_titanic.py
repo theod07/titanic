@@ -38,10 +38,15 @@ train_df[train_df['Embarked'] == 'Q'].count()   # 77
 
 embarked_mode = train_df['Embarked'].mode()[0]
 train_df['Embarked'].fillna(embarked_mode, inplace=True)
+
 age_mode = train_df.Age.mode().values
 age_median = train_df.Age.dropna().median()
+
 # train_df['Age'].fillna(age_mode, inplace=True)
 train_df['Age'].fillna(age_median, inplace=True)
+
+fare_median = train_df.Fare.dropna().median()
+train_df['Fare'].fillna(fare_median, inplace=True)
 
 train_df['embarked_cat'] = train_df['Embarked'].map( {'S': 1, 'C': 2, 'Q':3} ).astype(int)
 
@@ -51,10 +56,13 @@ train_df['embarked_cat'] = train_df['Embarked'].map( {'S': 1, 'C': 2, 'Q':3} ).a
 
 # model features: Pclass, Gender, Age, embarked_cat
 # fill Nan age with age_median
-# results:
+# results: 0.56459
 
+#model features Pclass, Age, SibSp, Parch Fare, Embarked, Gender
+# fill Nan age with age_median
+# results: 0.62679
 
-X_train = train_df[['Pclass', 'Gender', 'Age', 'embarked_cat']]
+X_train = train_df.drop(['Name', 'Sex', 'Ticket', 'Cabin' ,'PassengerId', 'Embarked', 'Survived'], axis=1)
 y_train = train_df['Survived']
 rf = RandomForestClassifier(n_estimators=100)
 rf.fit(X_train, y_train)
@@ -66,7 +74,9 @@ test_df['Embarked'].fillna(embarked_mode, inplace=True)
 # test_df['Age'].fillna(age_mode, inplace=True)
 test_df['Age'].fillna(age_median, inplace=True)
 test_df['embarked_cat'] = train_df['Embarked'].map( {'S': 1, 'C': 2, 'Q':3} ).astype(int)
-X_test = test_df[['Pclass', 'Gender', 'Age', 'embarked_cat']]
+test_df['Fare'].fillna(fare_median, inplace=True)
+
+X_test = test_df.drop(['Name', 'Sex', 'Ticket', 'Cabin' ,'PassengerId', 'Embarked'], axis=1)
 
 test_df['Survived'] = rf.predict(X_test)
 test_df.to_csv('prediction.csv', index_label=False, index=False, columns=['PassengerId', 'Survived'])
